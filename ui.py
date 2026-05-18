@@ -1,4 +1,6 @@
 from PySide6.QtWidgets import  QMainWindow  , QTabWidget  , QWidget
+from sympy import false
+
 from tab.codeclock_tab import CodeClock
 
 #code for the ui window.
@@ -19,3 +21,4 @@ class MainWindow(QMainWindow):
             QTabBar::tab {{ width: {400 // 3}px; }}
             QTabBar::tab:selected {{ border: 2px solid white; }}
         """)
+        self.tab.tabBar().setUsesScrollButtons(False)

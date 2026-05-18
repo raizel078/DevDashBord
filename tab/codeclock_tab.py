@@ -1,10 +1,8 @@
-from PySide6.QtWidgets import QWidget , QLabel , QVBoxLayout
+from PySide6.QtWidgets import QWidget , QLabel , QVBoxLayout , QTableWidget , QHeaderView
 import datetime
 from PySide6.QtCore import QTimer , Qt
 
-
 #now main ui code goes here,
-
 class CodeClock(QWidget):
     def __init__(self):
         super().__init__()
@@ -18,14 +16,20 @@ class CodeClock(QWidget):
         self.layout = QVBoxLayout()
         #creating a level to view the time and date
         self.time_bar = QLabel(str(self.time))
+        #this will place the live timer in the center of the window.
+        self.time_bar.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        #now below is styling to make the border only for the timer.
+        self.time_bar.setStyleSheet('border: 4px solid white')
         #adding the time bar to the widget
         self.layout.addWidget(self.time_bar)
         #setting the layout i:e sending layout after changes to main layout
         self.setLayout(self.layout)
-        #setting the displayed timer at the top center.
-        self.layout.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
-        #adding border to the displayed time and date.
-        self.time_bar.setStyleSheet('border: 2px solid')
+        #now the layout for the table for our date, session and duration
+        self.table = QTableWidget(0,3)
+        self.table.setHorizontalHeaderLabels(['Date','session', 'Duration'])
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.layout.addWidget(self.table)
+
 
 
     def update_time(self):

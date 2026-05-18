@@ -5,6 +5,6 @@ from ui import MainWindow
 
 if __name__=='__main__':
     app = QApplication(sys.argv)
-    window = MainWindow() # we will pass the window later
+    window = MainWindow()
     window.show()
     sys.exit(app.exec())
