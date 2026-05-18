@@ -1,16 +1,18 @@
 from PySide6.QtWidgets import  QMainWindow  , QTabWidget  , QWidget
+from tab.codeclock_tab import CodeClock
 
 #code for the ui window.
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setFixedSize(400, 700)
+        self.setFixedSize(400, 600)
         self.setWindowTitle('Nova DevBoard')
+
 
         #creation of the tab.
         self.tab = QTabWidget()
         self.setCentralWidget(self.tab)
-        self.tab.addTab(QWidget(), 'CodeCLock')
+        self.tab.addTab(CodeClock(), 'CodeCLock')
         self.tab.addTab(QWidget(), 'Clipboard')
         self.tab.addTab(QWidget(), 'TODO')
         self.tab.setStyleSheet(f"""
