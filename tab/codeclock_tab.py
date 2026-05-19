@@ -1,8 +1,9 @@
 from PySide6.QtWidgets import QWidget , QLabel , QVBoxLayout , QTableWidget , QHeaderView , QTableWidgetItem
 import datetime
 from PySide6.QtCore import QTimer , Qt
+from storage.codclock_storage import check_date ,PyCharm ,save_session
 
-from storage.codclock_storage import check_date ,PyCharm
+
 #now main ui code goes here,
 class CodeClock(QWidget):
     def __init__(self):
@@ -39,30 +40,65 @@ class CodeClock(QWidget):
         self.pycharm_thread.start()
         #now timer to record the start and end time.
         self.start_time =None
+        self.end_time = None
 
     def handle_pycharm(self, text):
-        if text =='open' and self.end_time is None:
-            self.start_time = datetime.datetime.now()
-            if not check_date(self.table, self.date):
-                self.table.insertRow(0)
+        if text == 'open':
+            if self.start_time is None:
+                self.start_time = datetime.datetime.now()
+                if not check_date(self.table, self.date):
+                    self.table.insertRow(0)
+                    date_item = QTableWidgetItem(str(self.date))
+                    date_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                    self.table.setItem(0, 0, date_item)
 
-                date_item = QTableWidgetItem(str(self.date))
-                date_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                self.table.setItem(0, 0, date_item)
+                    session_item = QTableWidgetItem(self.start_time.strftime('%H:%M:%S') + '..')
+                    session_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                    self.table.setItem(0, 1, session_item)
+                else:
+                    date_item = QTableWidgetItem(str(self.date))
+                    date_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                    self.table.setItem(0, 0, date_item)
 
-                session_item = QTableWidgetItem(self.start_time.strftime('%H:%M:%S') + ' -..')
+                    session_item = QTableWidgetItem(self.start_time.strftime('%H:%M:%S') + '..')
+                    session_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                    self.table.setItem(0, 1, session_item)
+
+        elif text == 'closed':
+            if self.start_time is not None:
+                start = self.start_time
+                self.start_time = None
+                end_time_dt = datetime.datetime.now()
+                end_time_str = end_time_dt.strftime("%H:%M:%S")
+                session_display = f"{start.strftime('%H:%M:%S')} - {end_time_str}"
+                session_item = QTableWidgetItem(session_display)
                 session_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.table.setItem(0, 1, session_item)
+                
+                # Also finalize duration
+                delta = end_time_dt - start
+                duration_item = QTableWidgetItem(str(delta).split('.')[0])
+                duration_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                self.table.setItem(0, 2, duration_item)
+                
+                # Save session
+                save_session(str(self.date), session_display, str(delta).split('.')[0])
 
-                #duration column will do here.
-
-        elif text =='closed':
-            pass
-
-
+    def Duration(self,start_time):
+        delta = datetime.datetime.now()-self.start_time
+        return str(delta).split('.')[0]
 
     def update_time(self):
         self.time_bar.setText(datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
+        if self.start_time is not None:
+            delta = datetime.datetime.now() - self.start_time
+            duration_item = QTableWidgetItem(str(delta).split('.')[0])
+            duration_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.table.setItem(0, 2, duration_item)
+
+
+
+
 
 
 

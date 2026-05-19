@@ -16,9 +16,8 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tab)
         self.tab.addTab(CodeClock(), 'CodeCLock')
         self.tab.addTab(QWidget(), 'Clipboard')
-        self.tab.addTab(QWidget(), 'TODO')
         self.tab.setStyleSheet(f"""
-            QTabBar::tab {{ width: {400 // 3}px; }}
+            QTabBar::tab {{ width: {400 // 2}px; }}
             QTabBar::tab:selected {{ border: 2px solid white; }}
         """)
         self.tab.tabBar().setUsesScrollButtons(False)
