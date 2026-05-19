@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import  QMainWindow  , QTabWidget  , QWidget
-from sympy import false
+
 
 from tab.codeclock_tab import CodeClock
 
