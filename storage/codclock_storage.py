@@ -36,7 +36,6 @@ class PyCharm(QThread):
                 last_state = 'closed'
             time.sleep(2)
 
-
 def save_session(date, session, duration):
     if not json_path.exists():
         with open(json_path, 'w') as f:
@@ -50,6 +49,9 @@ def save_session(date, session, duration):
     })
     with open(json_path, 'w') as f:
         json.dump(data, f)
+
+def update_duration(date, duration):
+    with open(json_path, 'r')as f:
 
 
 
