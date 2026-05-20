@@ -7,11 +7,6 @@ from pathlib import Path
 #code for the checking, logic goes below
 json_path = Path('/home/nowa/Desktop/new ML/sessions.json')
 
-def check_date(table, date):
-    for i in range(table.rowCount()):
-        if table.item(i,0).text() ==str(date):
-            return True
-    return None
 
 def is_pycharm_running():
     for process in psutil.process_iter():
@@ -49,10 +44,6 @@ def save_session(date, session, duration):
     })
     with open(json_path, 'w') as f:
         json.dump(data, f)
-
-def update_duration(date, duration):
-    with open(json_path, 'r')as f:
-
 
 
 

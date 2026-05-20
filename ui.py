@@ -1,7 +1,6 @@
 from PySide6.QtWidgets import  QMainWindow  , QTabWidget  , QWidget
-
-
 from tab.codeclock_tab import CodeClock
+from tab.clipboard_tab import ClipBoard
 
 #code for the ui window.
 class MainWindow(QMainWindow):
@@ -15,7 +14,7 @@ class MainWindow(QMainWindow):
         self.tab = QTabWidget()
         self.setCentralWidget(self.tab)
         self.tab.addTab(CodeClock(), 'CodeCLock')
-        self.tab.addTab(QWidget(), 'Clipboard')
+        self.tab.addTab(ClipBoard(), 'Clipboard')
         self.tab.setStyleSheet(f"""
             QTabBar::tab {{ width: {400 // 2}px; }}
             QTabBar::tab:selected {{ border: 2px solid white; }}

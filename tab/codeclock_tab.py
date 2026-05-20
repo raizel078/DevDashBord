@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget , QLabel , QVBoxLayout , QTableWidget , QHeaderView , QTableWidgetItem
 import datetime
 from PySide6.QtCore import QTimer , Qt
-from storage.codclock_storage import check_date ,PyCharm ,save_session
+from storage.codclock_storage import PyCharm ,save_session
 
 
 #now main ui code goes here,
@@ -41,28 +41,51 @@ class CodeClock(QWidget):
         #now timer to record the start and end time.
         self.start_time =None
         self.end_time = None
+        self.base_duration_before_session = datetime.timedelta()
+
+    def _find_date_row(self):
+        for i in range(self.table.rowCount()):
+            date_item = self.table.item(i, 0)
+            if date_item is not None and date_item.text() == str(self.date):
+                return i
+        return None
+
+    def _get_or_create_date_row(self):
+        row = self._find_date_row()
+        if row is None:
+            row = self.table.rowCount()
+            self.table.insertRow(row)
+            date_item = QTableWidgetItem(str(self.date))
+            date_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.table.setItem(row, 0, date_item)
+        return row
+
+    def _parse_duration(self, duration_text):
+        if not duration_text:
+            return datetime.timedelta()
+        hours, minutes, seconds = map(int, duration_text.split(':'))
+        return datetime.timedelta(hours=hours, minutes=minutes, seconds=seconds)
+
+    def _format_duration(self, delta):
+        total_seconds = int(delta.total_seconds())
+        hours = total_seconds // 3600
+        minutes = (total_seconds % 3600) // 60
+        seconds = total_seconds % 60
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
     def handle_pycharm(self, text):
         if text == 'open':
             if self.start_time is None:
                 self.start_time = datetime.datetime.now()
-                if not check_date(self.table, self.date):
-                    self.table.insertRow(0)
-                    date_item = QTableWidgetItem(str(self.date))
-                    date_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                    self.table.setItem(0, 0, date_item)
-
-                    session_item = QTableWidgetItem(self.start_time.strftime('%H:%M:%S') + '..')
-                    session_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                    self.table.setItem(0, 1, session_item)
+                row = self._get_or_create_date_row()
+                existing_duration_item = self.table.item(row, 2)
+                if existing_duration_item is not None:
+                    self.base_duration_before_session = self._parse_duration(existing_duration_item.text())
                 else:
-                    date_item = QTableWidgetItem(str(self.date))
-                    date_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                    self.table.setItem(0, 0, date_item)
-
-                    session_item = QTableWidgetItem(self.start_time.strftime('%H:%M:%S') + '..')
-                    session_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                    self.table.setItem(0, 1, session_item)
+                    self.base_duration_before_session = datetime.timedelta()
+                session_item = QTableWidgetItem(self.start_time.strftime('%H:%M:%S') + '..')
+                session_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                self.table.setItem(row, 1, session_item)
 
         elif text == 'closed':
             if self.start_time is not None:
@@ -73,13 +96,16 @@ class CodeClock(QWidget):
                 session_display = f"{start.strftime('%H:%M:%S')} - {end_time_str}"
                 session_item = QTableWidgetItem(session_display)
                 session_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                self.table.setItem(0, 1, session_item)
+                row = self._get_or_create_date_row()
+                self.table.setItem(row, 1, session_item)
                 
-                # Also finalize duration
+                # finalize and accumulate duration for the day
                 delta = end_time_dt - start
-                duration_item = QTableWidgetItem(str(delta).split('.')[0])
+                total_duration = self.base_duration_before_session + delta
+                duration_item = QTableWidgetItem(self._format_duration(total_duration))
                 duration_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                self.table.setItem(0, 2, duration_item)
+                self.table.setItem(row, 2, duration_item)
+                self.base_duration_before_session = total_duration
                 
                 # Save session
                 save_session(str(self.date), session_display, str(delta).split('.')[0])
@@ -92,9 +118,12 @@ class CodeClock(QWidget):
         self.time_bar.setText(datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
         if self.start_time is not None:
             delta = datetime.datetime.now() - self.start_time
-            duration_item = QTableWidgetItem(str(delta).split('.')[0])
-            duration_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.table.setItem(0, 2, duration_item)
+            row = self._find_date_row()
+            if row is not None:
+                live_total = self.base_duration_before_session + delta
+                duration_item = QTableWidgetItem(self._format_duration(live_total))
+                duration_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                self.table.setItem(row, 2, duration_item)
 
 
 
